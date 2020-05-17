@@ -22,6 +22,7 @@ from markdown import util
 from markdown.util import etree, text_type, AtomicString
 
 from mistletoe import (Document, block_tokenizer, block_token, span_token)
+from mistletoe.block_token import _token_types as _block_token_types
 from . import serializers
 
 logger = logging.getLogger(__name__)
@@ -529,6 +530,41 @@ class MarkdownInterop(markdown.Markdown):
                     'then simply remove the corresponding extension. If not, '
                     'consider re-implement these parts (probably the whole extension) '
                     'in mistletoe as individual block tokens.')
+
+    def convert(self, source):
+        preprocessed = self._run_preprocessors(source)
+
+        picked_st = [
+            'EscapeSequence',
+            # 'Strikethrough',  # mistletoe issue #86, PR #87
+            'AutoLink',
+            'CoreTokens',
+            'InlineCode',
+            'LineBreak',
+            'RawText',
+        ]
+
+        my_inline_token_types = [mistletoe_span_tokens[x] for x in picked_st]
+
+        # these are added by renderer when initializing, we
+        # are replacing them later, so we have to insert them
+        # by ourselves.
+        # not knowing how to handle this better
+
+        my_inline_token_types.insert(0, HTMLSpan)
+
+        with ETreeRenderer() as r:
+            docl = DocumentLazy(
+                preprocessed,
+                _block_token_types,
+                my_inline_token_types,
+                root_tag=self.doc_tag)
+
+            docl.run_block()
+            docl.run_maketree()
+
+            doc = r.render(docl).getroot()
+        return self._convert_from_elem(doc)
 
         MarkdownInterop.__first_run = False
 
