@@ -15,11 +15,10 @@ setuptools.setup(
             "commonmark = mkdocs_plugin_commonmark:CommonMark"
         ]
     },
-    # long_description=open("README.md", "r").read(),
-    # long_description_content_type="text/markdown",
-    # url="https://github.com/soxhub/mkdocs-plugin-commonmark",
+    long_description=open("README.md", "r").read(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/soxhub/mkdocs-plugin-commonmark",
     python_requires=">=3.4",
     include_package_data=True,
-    # project_urls=URLs,
     install_requires=open("requirements.txt", "r").readlines()
 )
