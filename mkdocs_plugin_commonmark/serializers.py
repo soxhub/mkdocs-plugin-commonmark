@@ -1,4 +1,4 @@
-# markdown/searializers.py
+# https://github.com/Python-Markdown/markdown/blob/master/markdown/serializers.py
 #
 # Add x/html serialization to Elementree
 # Taken from ElementTree 1.3 preview with slight modifications
@@ -37,19 +37,9 @@
 # --------------------------------------------------------------------
 
 
-''' A patched version of markdown.serializers in Python-Markdown. '''
-
-from __future__ import absolute_import
-from __future__ import unicode_literals
 from xml.etree.ElementTree import ProcessingInstruction
-from markdown import util
+from xml.etree.ElementTree import Comment, ElementTree, QName
 import re
-ElementTree = util.etree.ElementTree
-QName = util.etree.QName
-if hasattr(util.etree, 'test_comment'):  # pragma: no cover
-    Comment = util.etree.test_comment
-else:  # pragma: no cover
-    Comment = util.etree.Comment
 
 __all__ = ['to_html_string', 'to_xhtml_string']
 
@@ -65,7 +55,7 @@ except NameError:  # pragma: no cover
 
 def _raise_serialization_error(text):  # pragma: no cover
     raise TypeError(
-        "cannot serialize %r (type %s)" % (text, type(text).__name__)
+        "cannot serialize {!r} (type {})".format(text, type(text).__name__)
         )
 
 
@@ -130,12 +120,9 @@ def _serialize_html(write, elem, format):
         write("<!--%s-->" % _escape_cdata(text))
     elif tag is ProcessingInstruction:
         write("<?%s?>" % _escape_cdata(text))
-    elif tag is None or tag == '':
+    elif tag is None:
         if text:
-            if elem.get('unsafe'):
-                write(text)
-            else:
-                write(_escape_cdata(text))
+            write(_escape_cdata(text))
         for e in elem:
             _serialize_html(write, e, format)
     else:
@@ -163,7 +150,7 @@ def _serialize_html(write, elem, format):
                 #     # handle boolean attributes
                 #     write(" %s" % v)
                 # else:
-                write(' %s="%s"' % (k, v))
+                write(' {}="{}"'.format(k, v))
         if namespace_uri:
             write(' xmlns="%s"' % (_escape_attrib(namespace_uri)))
         if format == "xhtml" and tag.lower() in HTML_EMPTY:
