@@ -3,6 +3,7 @@ from mkdocs.structure.pages import Page, _RelativePathExtension
 
 from mkdocs.structure.toc import get_toc
 from .mistletoe_interop import MarkdownInterop
+import html
 
 
 def render(self, config, files):
@@ -20,7 +21,12 @@ def render(self, config, files):
     )
 
     self.content = md.convert(self.markdown)
-    self.toc = get_toc(getattr(md, 'toc_tokens', []))
+    toct = getattr(md, 'toc_tokens', [])
+    def unescapetoken(token):
+        token["name"] = html.unescape(token["name"])
+        token["children"] = map(unescapetoken, token["children"])
+        return token
+    self.toc = get_toc(map(unescapetoken, toct))
 
 # Page.render = render
 
